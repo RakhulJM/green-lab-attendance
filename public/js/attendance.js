@@ -269,6 +269,40 @@ async function handleQRScan() {
     await loadHistory();
 }
 
+
+function scheduleAutomaticCloseRefresh() {
+    const now = new Date();
+    const target = new Date(now);
+
+    const parts = new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(now);
+
+    const get = (type) => Number(parts.find((part) => part.type === type)?.value);
+    target.setUTCFullYear(get("year"), get("month") - 1, get("day"));
+    target.setUTCHours(11, 1, 0, 0);
+
+    if (target.getTime() <= now.getTime()) {
+        target.setUTCDate(target.getUTCDate() + 1);
+    }
+
+    const delay = target.getTime() - now.getTime();
+
+    setTimeout(async () => {
+        try {
+            await loadCurrentAttendance();
+            await loadHistory();
+        } catch (error) {
+            console.error("Automatic 4:30 PM refresh failed:", error);
+        } finally {
+            scheduleAutomaticCloseRefresh();
+        }
+    }, delay);
+}
+
 async function start() {
     try {
         await loadStudent();
