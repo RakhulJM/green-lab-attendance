@@ -324,3 +324,4 @@ start();
 
 updateHudClock();
 setInterval(updateHudClock, 1000);
+scheduleAutomaticCloseRefresh();
